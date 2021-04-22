@@ -7,8 +7,9 @@
     <title>P2P Test</title>
 </head>
 <body>
+    <p>Master Peer is connected to Peer 2 and Peer 3. In reality there exists two separate peers 1_2 and 1_3 connecting to Peer 2 and Peer 3. Check the script for more info.</p>
     <div class="peer">
-        <h4>Peer 1</h4>
+        <h4>Master Peer</h4>
         <input type="text" id="inp-1">
         <button id="btn-1">Send</button>
         <button id="disconn-1">Disconnect</button>
@@ -18,6 +19,12 @@
         <input type="text" id="inp-2">
         <button id="btn-2">Send</button>
         <button id="disconn-2">Disconnect</button>
+    </div>
+    <div class="peer">
+        <h4>Peer 3</h4>
+        <input type="text" id="inp-3">
+        <button id="btn-3">Send</button>
+        <button id="disconn-3">Disconnect</button>
     </div>
     <div id="messages"></div>
     <script src="./script.js"></script>
