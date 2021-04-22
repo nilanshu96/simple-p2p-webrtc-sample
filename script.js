@@ -36,6 +36,18 @@
         disconnectButton1.addEventListener('click', onDisconnect1);
         disconnectButton2.addEventListener('click', onDisconnect2);
 
+        input1.addEventListener('keyup', (event) => {
+            if(event.key === 'Enter') {
+                sendButton1.click();
+            }
+        })
+
+        input2.addEventListener('keyup', (event) => {
+            if(event.key === 'Enter') {
+                sendButton2.click();
+            }
+        })
+
         //scenario for two peers using single data channel using out-of-band negotiation using an agreed upon id
         peer1 = new RTCPeerConnection();
         channel1 = peer1.createDataChannel("chat", { negotiated: true, id: 1 });
