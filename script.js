@@ -1,20 +1,20 @@
-(function() {
+(function () {
     //peer 1
     let input1 = null;
     let sendButton1 = null;
     let disconnectButton1 = null;
-    let div1 = null;
     let channel1 = null;
     let peer1 = null;
-    let peer1ReceiveChannel = null;
+    
     //peer 2
     let input2 = null;
     let sendButton2 = null;
     let disconnectButton2 = null;
-    let div2 = null;
     let channel2 = null;
     let peer2;
-    let peer2ReceiveChannel = null;
+    
+    //message display div
+    let messageDiv = null;
 
     function startup() {
 
@@ -28,63 +28,73 @@
         disconnectButton2 = document.getElementById('disconn-2');
         div2 = document.getElementById('received-message2');
 
+        messageDiv = document.getElementById('messages');
+
         sendButton1.addEventListener('click', onSend1);
         sendButton2.addEventListener('click', onSend2);
 
         disconnectButton1.addEventListener('click', onDisconnect1);
         disconnectButton2.addEventListener('click', onDisconnect2);
 
+        //scenario for two peers using single data channel using out-of-band negotiation using an agreed upon id
         peer1 = new RTCPeerConnection();
-        channel1 = peer1.createDataChannel("chat1");
-        
-        channel1.onmessage = function(event) {
-            console.log('Peer 1 received: ' + event.data);
+        channel1 = peer1.createDataChannel("chat", { negotiated: true, id: 1 });
+
+        channel1.onmessage = function (event) {
+            handleReceivedMessage('Peer 1 received: ' + event.data);
         }
 
-        
-        
 
         peer2 = new RTCPeerConnection();
-        channel2 = peer2.createDataChannel("chat2");
-        
+        channel2 = peer2.createDataChannel("chat", { negotiated: true, id: 1 });
 
-        peer1.ondatachannel = function(event) {
-            console.log('ondata 1');
-            peer1ReceiveChannel = event.channel;
-            peer1ReceiveChannel.onmessage = (event) => {
-                console.log('Peer 1 received: ' + event.data);
-            }
-        }
-    
-        peer2.ondatachannel = function(event) {
-            console.log('ondata 2');
-            peer2ReceiveChannel = event.channel;
-            peer2ReceiveChannel.onmessage = (event) => {
-                console.log('Peer 2 received: ' + event.data);
-            }
+        channel2.onmessage = function (event) {
+            handleReceivedMessage('Peer 2 received: ' + event.data);
         }
 
-        peer1.onicecandidate = function(event) {
-            if(event.candidate) {
+        //Scenario for multiple data channels
+        // peer1.ondatachannel = function (event) {
+        //     console.log('ondata 1');
+        //     peer1ReceiveChannel = event.channel;
+        //     peer1ReceiveChannel.onmessage = (event) => {
+        //         console.log('Peer 1 received: ' + event.data);
+        //     }
+        // }
+
+        // peer2.ondatachannel = function (event) {
+        //     console.log('ondata 2');
+        //     peer2ReceiveChannel = event.channel;
+        //     peer2ReceiveChannel.onmessage = (event) => {
+        //         console.log('Peer 2 received: ' + event.data);
+        //     }
+        // }
+
+        peer1.onicecandidate = function (event) {
+            if (event.candidate) {
                 peer2.addIceCandidate(event.candidate);
             }
         }
 
-        peer2.onicecandidate = function(event) {
-            if(event.candidate) {
+        peer2.onicecandidate = function (event) {
+            if (event.candidate) {
                 peer1.addIceCandidate(event.candidate);
             }
         }
 
         peer1.createOffer()
-    .then(offer => peer1.setLocalDescription(offer))
-    .then(() => peer2.setRemoteDescription(peer1.localDescription))
-    .then(() => peer2.createAnswer())
-    .then(answer => peer2.setLocalDescription(answer))
-    .then(() => peer1.setRemoteDescription(peer2.localDescription))
-    .catch(console.log);
+            .then(offer => peer1.setLocalDescription(offer))
+            .then(() => peer2.setRemoteDescription(peer1.localDescription))
+            .then(() => peer2.createAnswer())
+            .then(answer => peer2.setLocalDescription(answer))
+            .then(() => peer1.setRemoteDescription(peer2.localDescription))
+            .catch(console.log);
+    }
 
-    
+    function handleReceivedMessage(data) {
+        const div = document.createElement('p');
+        const msgNode = document.createTextNode(data);
+        div.appendChild(msgNode);
+        messageDiv.appendChild(div);
     }
 
     function onDisconnect1() {
@@ -98,18 +108,22 @@
     }
 
     function onSend1() {
-        console.log(channel1.readyState);
-        if(channel1.readyState === "open") {
+
+        console.log('channel 1 ready state: ' + channel1.readyState);
+    
+        if (channel1.readyState === "open") {
             const message = input1.value;
-        channel1.send(message);
+            channel1.send(message);
         }
     }
 
     function onSend2() {
-        console.log(channel2.readyState);
-        if(channel2.readyState === "open") {
+
+        console.log('channel 2 ready state: ' + channel2.readyState);
+        
+        if (channel2.readyState === "open") {
             const message = input2.value;
-        channel2.send(message);
+            channel2.send(message);
         }
     }
 
